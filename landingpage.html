@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+body {
+  margin: 0;
+  overflow-y: hidden; /* Disable vertical scrolling */
+}
+
+#snakeCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  background: #000;
+  display: block;
+}
+
+#content {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+  scroll-snap-type: x mandatory;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+.segment {
+  position: relative;
+  height: 50vh;
+  width: 50vw;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.foreground {
+  text-align: center;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  z-index: 1;
+}
+
+.title {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.description {
+  font-size: 15px;
+  
+}
+
+.image {
+  max-width: 100%;
+  max-height: 80vh;
+}
+
+.image-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  z-index: 1;
+}
+
+.navigation {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.navigation button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.navigation button:focus {
+  outline: none;
+}
+
+  </style>
+</head>
+<body>
+    <canvas id="snakeCanvas"></canvas>
+  
+    <div id="content">
+      <div class="segment">
+        <div class="foreground">
+          <div class="title">SNEX</div>
+          <div class="description">100% ON-CHAIN CODE-GENERATED DYNAMIC ART <br> RESPONSIVE TO YOUR ETHEREUM BALANCE ! <br> LIVING IN ETHEREUM BLOCKCHAIN</div>
+        </div>
+      </div>
+  
+      <div class="segment">
+        <div class="image-segment">
+          <img class="image" src="thumb.png" alt="Image 1">
+          <p class="description">WATCH YOUR MONEY GROWS, <br> THE HIGHER YOUR ETH BALANCE, THE LONGER YOUR SNEX. <br>  REMEMBER,  <strong><em>FLEXING IS THE UTILITY!</em></strong> </p>
+        </div>
+      </div>
+  
+      <div class="segment">
+        <div class="image-segment">
+          <img class="image" src="path/to/your/image2.png" alt="Image 2">
+          <p class="description">---MINT WIDGET ---</p>
+        </div>
+      </div>
+
+      <div class="segment">
+        <div class="image-segment">
+          <div class="title">ABOUT ARTISTS</div>
+          <p class="description">
+            Yovista Ahtajida AKA <a href="https://twitter.com/_cryptophobia" target="_blank" style="color: rgb(0, 179, 255);">CryptoPhobia (CP) </a> is a Jakarta-based New Media artist. He's been in the Crypto-Art Space since 2021, using code and market dynamics as his main medium. His work has been presented in some major art exhibitions and festivals, including European Media Art Festival, Berlinale:Forum Expanded, Kochi-Muziris Biennale, and Jakarta Biennale, among others. His work has also been collected by prominent crypto-art figures such as XCOPY, Claire Silver, Trevor Jones, and VVD, among others.
+          </p>
+          <p class="description">
+            Ariel Becker is ...
+          </p>
+        </div>
+      </div>
+      
+  
+      <!-- Add more segments as needed -->
+  
+      <div class="navigation">
+        <button class="prev-button" disabled>&lt;</button>
+        <button class="next-button">&gt;</button>
+      </div>
+    </div>
+  
+
+  <script>
+
+
+// Set up the canvas
+const canvas = document.getElementById("snakeCanvas");
+const ctx = canvas.getContext("2d");
+const canvasWidth = canvas.width = window.innerWidth;
+const canvasHeight = canvas.height = window.innerHeight;
+
+// Snake properties
+const snakeSegments = 10000 ;
+const segmentSize = 50;
+const segmentSpacing = 2;
+const snakeSpeed = 100;
+const followDelay = 8;
+
+// Create an array to hold the snake segments
+const snake = [];
+
+// Calculate the initial Y position to keep the snake centered vertically
+const initialY = canvasHeight / 2 - (segmentSize + segmentSpacing) * Math.floor(snakeSegments / 2);
+
+// Initialize the snake segments
+// Initialize the snake segments
+for (let i = 0; i < snakeSegments; i++) {
+  const x = canvasWidth / 2;
+  const y = initialY - (segmentSize + segmentSpacing) * i;
+
+  snake.unshift({ x, y, delay: i * followDelay });
+}
+
+// Update the snake position
+function updateSnake() {
+  // Move the snake's tail towards the head
+  const tail = snake[0];
+  const nextTail = snake[1];
+  const tailDirectionX = nextTail.x - tail.x;
+  const tailDirectionY = nextTail.y - tail.y;
+  tail.x += tailDirectionX / followDelay;
+  tail.y += tailDirectionY / followDelay;
+
+  // Move the snake's head continuously
+  const head = snake[snake.length - 1]; // Set head as the last segment
+
+  const targetX = head.x + (Math.random() * 2 - 1) * (canvasWidth / 4); // Random target X position within a range
+  const targetY = head.y + (Math.random() * 2 - 1) * (canvasHeight / 4); // Random target Y position within a range
+  const dx = targetX - head.x;
+  const dy = targetY - head.y;
+
+  // Calculate the distance to the target position
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  // Set the step size based on the constant speed
+  const stepSize = snakeSpeed / followDelay;
+  const stepX = (dx / distance) * stepSize;
+  const stepY = (dy / distance) * stepSize;
+
+  // Move the head towards the target position
+  head.x += stepX;
+  head.y += stepY;
+
+  // Clamp the head's position to stay within the canvas boundaries
+  head.x = Math.max(segmentSize / 2, Math.min(canvasWidth - segmentSize / 2, head.x));
+  head.y = Math.max(segmentSize / 2, Math.min(canvasHeight - segmentSize / 2, head.y));
+
+  // Update the positions of the other segments to follow the head
+  for (let i = 1; i < snake.length - 1; i++) {
+    const segment = snake[i];
+    const nextSegment = snake[i + 1];
+
+    // Calculate the direction from the current segment to the next segment
+    const directionX = nextSegment.x - segment.x;
+    const directionY = nextSegment.y - segment.y;
+
+    // Move the current segment towards the next segment
+    segment.x += directionX / followDelay;
+    segment.y += directionY / followDelay;
+  }
+}
+
+
+function drawSnake() {
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  const colors = ['black','#ffec59'];
+
+  for (let i = 0; i < snakeSegments - 1; i++) {
+    const segment = snake[i];
+    const size = segmentSize;
+    const color = colors[i % colors.length];
+
+    ctx.beginPath();
+    ctx.arc(segment.x, segment.y, size / 2, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
+
+
+
+
+
+
+
+    // Animation loop
+    function animate() {
+      updateSnake();
+      drawSnake();
+      requestAnimationFrame(animate);
+    }
+
+    // Start the animation
+    animate();
+
+    const segments = Array.from(document.querySelectorAll('.segment'));
+const prevButton = document.querySelector('.prev-button');
+const nextButton = document.querySelector('.next-button');
+let currentSegmentIndex = 0;
+
+function updateSegmentVisibility() {
+  segments.forEach((segment, index) => {
+    segment.style.display = index === currentSegmentIndex ? 'flex' : 'none';
+  });
+
+  prevButton.disabled = currentSegmentIndex === 0;
+  nextButton.disabled = currentSegmentIndex === segments.length - 1;
+}
+
+function navigateToNextSegment() {
+  if (currentSegmentIndex < segments.length - 1) {
+    currentSegmentIndex++;
+    updateSegmentVisibility();
+  }
+}
+
+function navigateToPreviousSegment() {
+  if (currentSegmentIndex > 0) {
+    currentSegmentIndex--;
+    updateSegmentVisibility();
+  }
+}
+
+prevButton.addEventListener('click', navigateToPreviousSegment);
+nextButton.addEventListener('click', navigateToNextSegment);
+updateSegmentVisibility();
+
+  </script>
+</body>
+</html>
